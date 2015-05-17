@@ -1,20 +1,21 @@
-package net.fawad.rabbitmqloadgen
+package io.gatling.amqp.action
 
-import akka.actor.ActorRef
-import scala.Some
+import akka.actor._
+import akka.pattern.ask
+import akka.util.Timeout
+import io.gatling.amqp.config._
+import io.gatling.amqp.data.PublishRequest
 import io.gatling.core.action.Chainable
-import io.gatling.core.result.message.{ RequestTimings, KO, OK, Status }
-import io.gatling.core.result.writer.DataWriters
+import io.gatling.core.result.message.{KO, OK, RequestTimings, Status}
 import io.gatling.core.session.Session
 import io.gatling.core.structure.ScenarioContext
 import io.gatling.core.util.TimeHelper.nowMillis
-import akka.pattern.ask
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Failure
-import akka.util.Timeout
 
-class PublishToRabbitMQAction(val next: ActorRef, ctx: ScenarioContext, interactor: ActorRef, exchangeInfo: ExchangeInfo, gen: Iterator[Message]) extends Chainable {
+class PublishAction(val next: ActorRef, ctx: ScenarioContext, gen: Iterator[PublishRequest])(implicit amqp: AmqpProtocol) extends Chainable with ActorLogging {
   override def execute(session: Session) {
     var startedAt : Long = 0L
     var finishedAt: Long = 0L
@@ -24,7 +25,7 @@ class PublishToRabbitMQAction(val next: ActorRef, ctx: ScenarioContext, interact
     try {
       startedAt = nowMillis
       val msg = gen.next()
-      Await.result((interactor ask Publish(msg, exchangeInfo))(timeout), Duration.Inf) match {
+      Await.result((amqp.router ask msg)(timeout), Duration.Inf) match {
         case Failure(e) => throw e
         case _ =>
       }
@@ -38,6 +39,9 @@ class PublishToRabbitMQAction(val next: ActorRef, ctx: ScenarioContext, interact
 
       val timings = RequestTimings(startedAt, finishedAt, finishedAt, finishedAt)
       val requestName = "RabbitMQ Publishing"
+
+      val sec = (finishedAt - startedAt)/1000.0
+      logger.debug(s"$toString: timings=$timings ($sec)")
       ctx.dataWriters.logResponse(session, requestName, timings, status, None, errorMessage)
 
       next ! session

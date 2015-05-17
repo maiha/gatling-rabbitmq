@@ -17,4 +17,4 @@ libraryDependencies += "com.jsuereth" %% "scala-arm" % "1.4"
 libraryDependencies += "com.typesafe.scala-logging" % "scala-logging-slf4j_2.11" % "2.1.2"
 libraryDependencies += "com.github.kxbmap" %% "configs" % "0.2.4"
 libraryDependencies += "org.scalatest" % "scalatest_2.11" % "3.0.0-SNAP4" % "test"
-
+libraryDependencies += "pl.project13.scala" %% "rainbow" % "0.2"

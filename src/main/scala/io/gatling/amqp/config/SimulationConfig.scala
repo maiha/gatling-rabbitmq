@@ -1,4 +1,4 @@
-package net.fawad.rabbitmqloadgen
+package io.gatling.amqp.config
 
 import com.typesafe.config._
 import com.github.kxbmap.configs._
