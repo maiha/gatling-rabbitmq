@@ -4,3 +4,5 @@
 build
 classes
 atlassian-ide-plugin.xml
+/project/project
+target
