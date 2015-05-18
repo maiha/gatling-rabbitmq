@@ -32,7 +32,7 @@ class PublishAction(val next: ActorRef, ctx: ScenarioContext, gen: Iterator[Publ
     } catch {
       case e: Exception =>
         errorMessage = Some(e.getMessage)
-        logger.error("Unable to publish", e)
+        log.error("Unable to publish", e)
         status = KO
     } finally {
       finishedAt = nowMillis
@@ -41,7 +41,7 @@ class PublishAction(val next: ActorRef, ctx: ScenarioContext, gen: Iterator[Publ
       val requestName = "RabbitMQ Publishing"
 
       val sec = (finishedAt - startedAt)/1000.0
-      logger.debug(s"$toString: timings=$timings ($sec)")
+      log.debug(s"$toString: timings=$timings ($sec)")
       ctx.dataWriters.logResponse(session, requestName, timings, status, None, errorMessage)
 
       next ! session
