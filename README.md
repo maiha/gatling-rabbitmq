@@ -8,7 +8,7 @@ Setting
 =======
 
 - RabbitMQ: src/test/resources/application.conf
-- Simulation: src/test/scala/RabbitMQPublishingSimulation.scala
+- Simulation: src/test/scala/io/gatling/amqp/AmqpPublishingSimulation.scala
 
 
 Run
@@ -31,8 +31,9 @@ Forked
     - move settings to typesafe config
     - update gatling version from 2.0.0-M3a to 2.2.0-M2
     - payload is now fixed string (just testing purpose)
+    - AmqpProtocol
 
 TODO
 ====
 
-- create AmqpProtocol to connect servers and use ActorSystem in warm up phase
+- AMQP DSLs
