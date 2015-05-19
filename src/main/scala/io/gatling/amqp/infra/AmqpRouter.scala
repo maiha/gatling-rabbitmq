@@ -6,8 +6,7 @@ import io.gatling.amqp.config._
 import io.gatling.amqp.data._
 import pl.project13.scala.rainbow._
 
-class RmqRouter(implicit amqp: AmqpProtocol) extends Actor with ActorLogging {
-//  private val router = context.actorOf(FromConfig.props(Props[RmqPublisher]))
+class AmqpRouter(implicit amqp: AmqpProtocol) extends AmqpActor {
   private var router = Router(RoundRobinRoutingLogic(), Vector[Routee]())
 
   override def preStart(): Unit = {
@@ -20,16 +19,11 @@ class RmqRouter(implicit amqp: AmqpProtocol) extends Actor with ActorLogging {
       router.route(m, sender())
     case Terminated(ref) =>
       router = router.removeRoutee(ref)
-      log.error("RmqPublisher terminated".yellow)
 //      addRoutee
   }
 
   private def addRoutee(): Unit = {
-
-  // TODO: This is probably a stink. Figure out a good way of handling this
-  //    Await.result(interactors ask InitializeSubscriber(connection.exchange), timeout)
-
-    val ref = context.actorOf(Props(new RmqPublisher()))
+    val ref = context.actorOf(Props(new AmqpPublisher()))
     context watch ref
     router = router.addRoutee(ref)
   }

@@ -2,7 +2,7 @@ package io.gatling.amqp
 
 import akka.actor._
 import io.gatling.amqp.action._
-import io.gatling.amqp.config.AmqpConfig
+import io.gatling.amqp.config._
 import io.gatling.amqp.data._
 import io.gatling.core.Predef._
 import io.gatling.core.action.builder.ActionBuilder
@@ -10,13 +10,13 @@ import io.gatling.core.structure.ScenarioContext
 
 import scala.concurrent.duration._
 
-class AmqpPublishingSimulation extends Simulation with AmqpConfig {
+class AmqpPublishingSimulation extends Simulation with AmqpSupport {
   // protocol
-  implicit val amqpProtocol = rabbit.toAmqpProtocol
+  implicit val amqpProtocol = config.toAmqpProtocol
 
   amqpProtocol prepare DeclareQueue("q1", autoDelete = false)
 
-  val request   = PublishRequest(amqpProtocol.exchange, amqpProtocol.connection.routingKey, simulation.payload)
+  val request   = PublishRequest("q1", payload = "{foo:1}")
   val generator = Stream.continually(request).iterator
 
   val publish = new ActionBuilder {
@@ -25,11 +25,17 @@ class AmqpPublishingSimulation extends Simulation with AmqpConfig {
     }
   }
 
-  val scn = scenario(simulation.name).repeat(simulation.requests) {
+  /*
+   * TODO: IMAGE
+   * exec(amqp.publish("q1", payload))
+   * exec(amqp.publish("q1", payload).confirm)
+   */
+
+  val scn = scenario("RabbitMQ Publishing").repeat(5) {
     exec(publish)
   }
 
-  setUp(scn.inject(rampUsers(simulation.concurrency) over (2 seconds))).protocols(amqpProtocol)
+  setUp(scn.inject(rampUsers(2) over (2 seconds))).protocols(amqpProtocol)
 //    .assertions(global.responseTime.max.lessThan(20), global.successfulRequests.percent.is(100))
 }
 
