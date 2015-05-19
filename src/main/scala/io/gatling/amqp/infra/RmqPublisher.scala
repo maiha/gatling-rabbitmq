@@ -10,6 +10,8 @@ import resource.managed
 import scala.util.{Failure, Success}
 
 class RmqPublisher(implicit amqp: AmqpProtocol) extends Actor with ActorLogging {
+  log.debug("Initialized RmqPublisher")
+
   private val conn = amqp.newConnection
 
   override def receive = {

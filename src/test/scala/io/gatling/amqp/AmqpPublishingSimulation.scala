@@ -14,6 +14,8 @@ class AmqpPublishingSimulation extends Simulation with AmqpConfig {
   // protocol
   implicit val amqpProtocol = rabbit.toAmqpProtocol
 
+  amqpProtocol prepare DeclareQueue("q1", autoDelete = false)
+
   val request   = PublishRequest(amqpProtocol.exchange, amqpProtocol.connection.routingKey, simulation.payload)
   val generator = Stream.continually(request).iterator
 

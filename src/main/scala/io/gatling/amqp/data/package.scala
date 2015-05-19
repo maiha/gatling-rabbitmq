@@ -1,7 +1,9 @@
 package io.gatling.amqp
 
-import collection.mutable.HashMap
+import scala.collection.mutable.HashMap
 
 package object data {
   type Arguments = HashMap[String, Object]
+
+  def DefaultArguments: Arguments = HashMap[String, Object]()
 }

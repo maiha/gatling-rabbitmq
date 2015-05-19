@@ -4,30 +4,46 @@ import akka.actor._
 import com.rabbitmq.client.Channel
 import io.gatling.amqp.config._
 import io.gatling.amqp.data._
-import pl.project13.scala.rainbow._
 import resource.managed
 
 import collection.JavaConversions._
 import scala.util.{Failure, Success}
 
 class AmqpManager(implicit amqp: AmqpProtocol) extends AmqpActor {
-  log.info("Initialized AmqpManager".green)
+  log.debug("Initialized AmqpManager")
 
   override def receive = {
-    case DeclareExchange(name, tpe, durable, autoDelete, arguments) =>
+    case msg@ DeclareExchange(name, tpe, durable, autoDelete, arguments) =>
       onChannel { channel =>
         log.info(s"Initializing RabbitMQ exchange $name")
-        channel.exchangeDeclare(name, tpe, durable, autoDelete, arguments)
+        try {
+          channel.exchangeDeclare(name, tpe, durable, autoDelete, arguments)
+          sender() ! Success(msg)
+        } catch {
+          case e: Throwable => sender() ! Failure(e)
+        }
       }
-    case DeclareQueue(name, durable, exclusive, autoDelete, arguments) =>
+
+    case msg@ DeclareQueue(name, durable, exclusive, autoDelete, arguments) =>
       onChannel { channel =>
         log.info(s"Initializing RabbitMQ queue $name")
-        channel.queueDeclare(name, durable, exclusive, autoDelete, arguments)
+        try {
+          channel.queueDeclare(name, durable, exclusive, autoDelete, arguments)
+          sender() ! Success(msg)
+        } catch {
+          case e: Throwable => sender() ! Failure(e)
+        }
+
       }
-    case DeclareBinding(queue, exchange, routingKey, arguments) =>
+    case msg@ BindQueue(exchange, queue, routingKey, arguments) =>
       onChannel { channel =>
         log.info(s"Initializing RabbitMQ binding $exchange to $queue")
-        channel.queueBind(queue, exchange, routingKey, arguments)
+        try {
+          channel.queueBind(queue, exchange, routingKey, arguments)
+          sender() ! Success(msg)
+        } catch {
+          case e: Throwable => sender() ! Failure(e)
+        }
       }
   }
 }

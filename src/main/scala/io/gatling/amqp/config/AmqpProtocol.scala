@@ -1,7 +1,15 @@
 package io.gatling.amqp.config
 
-import com.rabbitmq.client.ConnectionFactory
 import akka.actor._
+import akka.pattern.ask
+import akka.util.Timeout
+import com.rabbitmq.client.ConnectionFactory
+import com.typesafe.scalalogging.StrictLogging
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.collection.mutable.ArrayBuffer
+import scala.util._
+
 import io.gatling.core.config.Protocol
 import io.gatling.core.controller.throttle.Throttler
 import io.gatling.core.result.writer.DataWriters
@@ -9,13 +17,17 @@ import io.gatling.core.session.Session
 import io.gatling.amqp.data._
 import io.gatling.amqp.infra._
 
+import pl.project13.scala.rainbow._
+
 /**
  * Wraps a AMQP protocol configuration
  */
 case class AmqpProtocol(
-  connection: Connection       = Connection.default,
-  _exchange : Option[Exchange] = None
-) extends Protocol {
+  connection: Connection               = Connection.default,
+  _exchange : Option[Exchange]         = None
+) extends Protocol with StrictLogging {
+
+  private val preparings : ArrayBuffer[AmqpMessage] = ArrayBuffer[AmqpMessage]()
 
   /**
    * mutable variables (initialized in warmUp)
@@ -37,6 +49,15 @@ case class AmqpProtocol(
     systemOpt = Some(system)
     routerOpt = Some(system.actorOf(Props(new RmqRouter()(this))))
     manageOpt = Some(system.actorOf(Props(new AmqpManager()(this))))
+
+    val timeout = Timeout(3 seconds)
+
+    for (msg <- preparings) {
+      Await.result((manager ask msg)(timeout), Duration.Inf) match {
+        case Success(m) => logger.info(s"amqp: $m".green)
+        case Failure(e) => throw e
+      }
+    }
   }
 
   /**
@@ -44,6 +65,10 @@ case class AmqpProtocol(
    */
   override def userEnd(session: Session): Unit = {
     super.userEnd(session)
+  }
+
+  def prepare(msg: AmqpMessage): Unit = {
+    preparings += msg
   }
 
   def validate(): Unit = {
