@@ -20,23 +20,31 @@ case class AmqpProtocol(
   /**
    * mutable variables (initialized in warmUp)
    */
-  private var routerOpt: Option[ActorRef]    = None
   private var systemOpt: Option[ActorSystem] = None
+  private var manageOpt: Option[ActorRef]    = None
+  private var routerOpt: Option[ActorRef]    = None
 
-  def router  : ActorRef    = routerOpt.getOrElse{ throw new RuntimeException("router is not defined yet") }
   def system  : ActorSystem = systemOpt.getOrElse{ throw new RuntimeException("ActorSystem is not defined yet") }
+  def manager : ActorRef    = manageOpt.getOrElse{ throw new RuntimeException("manager is not defined yet") }
+  def router  : ActorRef    = routerOpt.getOrElse{ throw new RuntimeException("router is not defined yet") }
   def exchange: Exchange    = _exchange.getOrElse{ throw new RuntimeException("exchange not defined") }
 
+  /**
+   * warmUp AMQP protocol (invoked by gatling framework)
+   */
   override def warmUp(system: ActorSystem, dataWriters: DataWriters, throttler: Throttler): Unit = {
     super.warmUp(system, dataWriters, throttler)
     systemOpt = Some(system)
     routerOpt = Some(system.actorOf(Props(new RmqRouter()(this))))
+    manageOpt = Some(system.actorOf(Props(new AmqpManager()(this))))
   }
 
+  /**
+   * finalize user session about AMQP (invoked by gatling framework)
+   */
   override def userEnd(session: Session): Unit = {
     super.userEnd(session)
   }
-
 
   def validate(): Unit = {
     connection.validate
