@@ -6,7 +6,7 @@ import akka.util.Timeout
 import io.gatling.amqp.config._
 import io.gatling.amqp.data.PublishRequest
 import io.gatling.core.action.Chainable
-import io.gatling.core.result.message.{KO, OK, RequestTimings, Status}
+import io.gatling.core.result.message.{KO, OK, ResponseTimings, Status}
 import io.gatling.core.session.Session
 import io.gatling.core.structure.ScenarioContext
 import io.gatling.core.util.TimeHelper.nowMillis
@@ -36,12 +36,12 @@ class PublishAction(val next: ActorRef, ctx: ScenarioContext, req: PublishReques
     } finally {
       finishedAt = nowMillis
 
-      val timings = RequestTimings(startedAt, finishedAt, finishedAt, finishedAt)
+      val timings = ResponseTimings(startedAt, finishedAt, finishedAt, finishedAt)
       val requestName = "RabbitMQ Publishing"
 
       val sec = (finishedAt - startedAt)/1000.0
       log.debug(s"$toString: timings=$timings ($sec)")
-      ctx.dataWriters.logResponse(session, requestName, timings, status, None, errorMessage)
+      ctx.statsEngine.logResponse(session, requestName, timings, status, None, errorMessage)
 
       next ! session
     }

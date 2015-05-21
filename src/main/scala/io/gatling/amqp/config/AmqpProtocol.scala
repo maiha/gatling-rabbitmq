@@ -6,7 +6,7 @@ import com.typesafe.scalalogging.StrictLogging
 
 import io.gatling.core.config.Protocol
 import io.gatling.core.controller.throttle.Throttler
-import io.gatling.core.result.writer.DataWriters
+import io.gatling.core.result.writer.StatsEngine
 import io.gatling.core.session.Session
 import io.gatling.amqp.data._
 import io.gatling.amqp.infra._
@@ -44,8 +44,8 @@ case class AmqpProtocol(
   /**
    * warmUp AMQP protocol (invoked by gatling framework)
    */
-  override def warmUp(system: ActorSystem, dataWriters: DataWriters, throttler: Throttler): Unit = {
-    super.warmUp(system, dataWriters, throttler)
+  override def warmUp(system: ActorSystem, statsEngine: StatsEngine, throttler: Throttler): Unit = {
+    super.warmUp(system, statsEngine, throttler)
     setupVariables(system)
     awaitPreparation()
   }

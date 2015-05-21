@@ -1,14 +1,22 @@
 Introduction
 ============
 
-Support for load testing RabbitMQ endpoints using Gatling 2.2.0-M2 and gatling-sbt plugin
+Support for load testing RabbitMQ endpoints using Gatling 2.2.0-M3 and gatling-sbt plugin
 
 
-Setting
-=======
+Simulation
+==========
 
-- RabbitMQ: src/test/resources/application.conf
-- Simulation: src/test/scala/io/gatling/amqp/AmqpPublishingSimulation.scala
+- Example: src/test/scala/io/gatling/amqp/AmqpPublishingSimulation.scala
+
+```
+implicit val amqpProtocol: AmqpProtocol = amqp
+  .host("localhost")
+  .port(5672)
+  .auth("guest", "guest")
+  .poolSize(5)
+
+```
 
 
 Run
@@ -28,12 +36,6 @@ Forked
 - changes
     - use sbt rather than gradle (cause I'm newbie to gradle :))
     - delete existing tests because gatling-sbt uses testing framework for its simulations
-    - move settings to typesafe config
-    - update gatling version from 2.0.0-M3a to 2.2.0-M2
+    - update gatling version from 2.0.0-M3a to 2.2.0-M3
     - payload is now fixed string (just testing purpose)
     - AmqpProtocol
-
-TODO
-====
-
-- AMQP DSLs
