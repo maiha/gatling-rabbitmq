@@ -16,7 +16,7 @@ trait AmqpModule extends AmqpCheckSupport {
    * @param requestName human readable name of request
    * @return a PingBuilder instance which can be used to build up a ping
    */
-  def amqp(requestName: Expression[String]) = new Amqp(requestName)
+  def amqp(requestName: Expression[String]) = AmqpRequestBuilder(requestName)
 
   /**
    * Convert a AmqpProtocolBuilder to a AmqpProtocol

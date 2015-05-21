@@ -23,16 +23,6 @@ class AmqpPublishingSimulation extends Simulation {
 
   val request = PublishRequest("q1", payload = "{foo:1}")
 
-  val pub = amqp("Publish")
-    .publish(request) // accepted, but not worked yet (NOP now)
-
-  // TODO: move to AmqpRequestBuilder
-  val publish = new ActionBuilder {
-    def build(system: ActorSystem, next: ActorRef, ctx: ScenarioContext): ActorRef = {
-      system.actorOf(Props(new PublishAction(next, ctx, request)))
-    }
-  }
-
   /*
    * TODO: IMAGE
    * exec(amqp.publish("q1", payload))
@@ -40,7 +30,10 @@ class AmqpPublishingSimulation extends Simulation {
    */
 
   val scn = scenario("RabbitMQ Publishing").repeat(1000) {
-    exec(publish)
+    exec(
+      amqp("Publish")
+        .publish(request)
+    )
   }
 
   setUp(scn.inject(rampUsers(10) over (2 seconds))).protocols(amqpProtocol)

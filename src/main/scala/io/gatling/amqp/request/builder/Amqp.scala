@@ -5,10 +5,10 @@ import io.gatling.amqp.data._
 
 // (implicit configuration: GatlingConfiguration)
 class Amqp(requestName: Expression[String]) {
-  def publish(req: PublishRequest) = amqpRequest(req)
-
+/*
   def amqpRequest(req: AmqpRequest): AmqpRequestBuilder = {
     new AmqpRequestBuilder(CommonAttributes(requestName), AmqpAttributes(req :: Nil))
   }
+ */
 }
 
