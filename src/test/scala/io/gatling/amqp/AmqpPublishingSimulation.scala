@@ -8,20 +8,24 @@ import io.gatling.core.Predef._
 import io.gatling.core.action.builder.ActionBuilder
 import io.gatling.core.structure.ScenarioContext
 
+import io.gatling.amqp.Predef._
 import scala.concurrent.duration._
 
-class AmqpPublishingSimulation extends Simulation with AmqpSupport {
+class AmqpPublishingSimulation extends Simulation {
   // protocol
-  implicit val amqpProtocol = config.toAmqpProtocol
+  implicit val amqpProtocol: AmqpProtocol = amqp
+    .host("localhost")
+    .port(5672)
+    .auth("guest", "guest")
+    .poolSize(5)
 
-  amqpProtocol prepare DeclareQueue("q1", autoDelete = false)
+//  amqpConf prepare DeclareQueue("q1", autoDelete = false)
 
-  val request   = PublishRequest("q1", payload = "{foo:1}")
-  val generator = Stream.continually(request).iterator
+  val request = PublishRequest("q1", payload = "{foo:1}")
 
   val publish = new ActionBuilder {
     def build(system: ActorSystem, next: ActorRef, ctx: ScenarioContext): ActorRef = {
-      system.actorOf(Props(new PublishAction(next, ctx, generator)))
+      system.actorOf(Props(new PublishAction(next, ctx, request)))
     }
   }
 
@@ -31,7 +35,7 @@ class AmqpPublishingSimulation extends Simulation with AmqpSupport {
    * exec(amqp.publish("q1", payload).confirm)
    */
 
-  val scn = scenario("RabbitMQ Publishing").repeat(10000) {
+  val scn = scenario("RabbitMQ Publishing").repeat(1000) {
     exec(publish)
   }
 

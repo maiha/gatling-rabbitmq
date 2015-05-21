@@ -2,8 +2,11 @@ package io.gatling.amqp
 
 import io.gatling.core.action.builder.ActionBuilder
 import io.gatling.amqp.check.AmqpCheckSupport
+import io.gatling.amqp.config._
 
 trait AmqpModule extends AmqpCheckSupport {
+
+  def amqp = new AmqpProtocolBuilder(AmqpProtocol.default)
 
   /**
    * DSL text to start the amqp builder

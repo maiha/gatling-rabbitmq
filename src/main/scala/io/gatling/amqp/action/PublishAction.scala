@@ -15,7 +15,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Failure
 
-class PublishAction(val next: ActorRef, ctx: ScenarioContext, gen: Iterator[PublishRequest])(implicit amqp: AmqpProtocol) extends Chainable with ActorLogging {
+class PublishAction(val next: ActorRef, ctx: ScenarioContext, req: PublishRequest)(implicit amqp: AmqpProtocol) extends Chainable with ActorLogging {
   override def execute(session: Session) {
     var startedAt : Long = 0L
     var finishedAt: Long = 0L
@@ -24,8 +24,7 @@ class PublishAction(val next: ActorRef, ctx: ScenarioContext, gen: Iterator[Publ
     var errorMessage: Option[String] = None
     try {
       startedAt = nowMillis
-      val msg = gen.next()
-      Await.result((amqp.router ask msg)(timeout), Duration.Inf) match {
+      Await.result((amqp.router ask req)(timeout), Duration.Inf) match {
         case Failure(e) => throw e
         case _ =>
       }
