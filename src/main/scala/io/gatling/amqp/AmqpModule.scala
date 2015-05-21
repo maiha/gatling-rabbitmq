@@ -1,8 +1,10 @@
 package io.gatling.amqp
 
 import io.gatling.core.action.builder.ActionBuilder
+import io.gatling.core.session.Expression
 import io.gatling.amqp.check.AmqpCheckSupport
 import io.gatling.amqp.config._
+import io.gatling.amqp.request.builder._
 
 trait AmqpModule extends AmqpCheckSupport {
 
@@ -14,7 +16,7 @@ trait AmqpModule extends AmqpCheckSupport {
    * @param requestName human readable name of request
    * @return a PingBuilder instance which can be used to build up a ping
    */
-  // def amqp(requestName: String) = new AmqpRequestBuilder(requestName)
+  def amqp(requestName: Expression[String]) = new Amqp(requestName)
 
   /**
    * Convert a AmqpProtocolBuilder to a AmqpProtocol

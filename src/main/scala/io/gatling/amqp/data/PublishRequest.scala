@@ -2,7 +2,12 @@ package io.gatling.amqp.data
 
 import com.rabbitmq.client.AMQP.BasicProperties
 
-case class PublishRequest(exchange: Exchange, routingKey: String, properties: BasicProperties, payload: Array[Byte])
+case class PublishRequest(
+  exchange: Exchange,
+  routingKey: String,
+  properties: BasicProperties,
+  payload: Array[Byte]
+) extends AmqpRequest
 
 object PublishRequest {
   def apply(queueName: String, bytes: Array[Byte]): PublishRequest =

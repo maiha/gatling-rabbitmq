@@ -23,6 +23,9 @@ class AmqpPublishingSimulation extends Simulation {
 
   val request = PublishRequest("q1", payload = "{foo:1}")
 
+  val pub = amqp("Publish")
+    .publish(request) // not worked yet (NOP now)
+
   val publish = new ActionBuilder {
     def build(system: ActorSystem, next: ActorRef, ctx: ScenarioContext): ActorRef = {
       system.actorOf(Props(new PublishAction(next, ctx, request)))
