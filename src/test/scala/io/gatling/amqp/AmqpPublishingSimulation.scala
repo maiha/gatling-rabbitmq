@@ -31,11 +31,11 @@ class AmqpPublishingSimulation extends Simulation with AmqpSupport {
    * exec(amqp.publish("q1", payload).confirm)
    */
 
-  val scn = scenario("RabbitMQ Publishing").repeat(5) {
+  val scn = scenario("RabbitMQ Publishing").repeat(10000) {
     exec(publish)
   }
 
-  setUp(scn.inject(rampUsers(2) over (2 seconds))).protocols(amqpProtocol)
+  setUp(scn.inject(rampUsers(10) over (2 seconds))).protocols(amqpProtocol)
 //    .assertions(global.responseTime.max.lessThan(20), global.successfulRequests.percent.is(100))
 }
 
