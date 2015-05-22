@@ -1,41 +1,63 @@
 Introduction
 ============
 
-Support for load testing RabbitMQ endpoints using Gatling 2.2.0-M3 and gatling-sbt plugin
+Gatling AMQP support
+
+- CAUTION: This is not official library!
+    - but using 'io.gatling.amqp' for FQCN to deal with 'private[gatling]', sorry.
+- inspired by https://github.com/fhalim/gatling-rabbitmq (thanks!)
 
 
-Simulation
-==========
+Usage
+=====
 
-- Example: src/test/scala/io/gatling/amqp/AmqpPublishingSimulation.scala
-
-```
-implicit val amqpProtocol: AmqpProtocol = amqp
-  .host("localhost")
-  .port(5672)
-  .auth("guest", "guest")
-  .poolSize(5)
+- see example: src/test/scala/io/gatling/amqp/PublishingSimulation.scala
 
 ```
+  implicit val amqpProtocol: AmqpProtocol = amqp
+    .host("localhost")
+    .port(5672)
+    .auth("guest", "guest")
+    .poolSize(10)
 
+  val scn = scenario("RabbitMQ Publishing").repeat(1000) {
+    exec(
+      amqp("Publish")
+        .publish("q1", payload = "{foo:1}")
+    )
+  }
+
+  setUp(scn.inject(rampUsers(10) over (3 seconds))).protocols(amqpProtocol)
+```
 
 Run
 ===
-
-- ensure RabbitMQ server is running in localhost or specified server in application.conf
 
 ```
 % sbt
 > test
 ```
 
-Forked
-======
+Restrictions
+============
 
-- from: https://github.com/fhalim/gatling-rabbitmq
-- changes
-    - use sbt rather than gradle (cause I'm newbie to gradle :))
-    - delete existing tests because gatling-sbt uses testing framework for its simulations
-    - update gatling version from 2.0.0-M3a to 2.2.0-M3
-    - payload is now fixed string (just testing purpose)
-    - AmqpProtocol
+- work in progress
+    - currently only one action can be defined in action builder
+
+
+Environment
+===========
+
+- gatling-sbt-2.1.6 (to implement easily)
+- gatling-2.2.0-M3 (live with edge)
+
+
+TODO
+====
+
+- declare exchanges, queues and bindings in protocol builder context
+- declare exchanges, queues and bindings in action builder context (to test declaration costs)
+- add 'confirm' action (it's a dialect of RabbitMQ)
+    - ex) `exec(amqp.publish("q1", payload).confirm)`
+
+

@@ -11,33 +11,22 @@ import io.gatling.core.structure.ScenarioContext
 import io.gatling.amqp.Predef._
 import scala.concurrent.duration._
 
-class AmqpPublishingSimulation extends Simulation {
-  // protocol
+class PublishingSimulation extends Simulation {
   implicit val amqpProtocol: AmqpProtocol = amqp
     .host("localhost")
     .port(5672)
     .auth("guest", "guest")
-    .poolSize(5)
-
-//  amqpConf prepare DeclareQueue("q1", autoDelete = false)
-
-  val request = PublishRequest("q1", payload = "{foo:1}")
-
-  /*
-   * TODO: IMAGE
-   * exec(amqp.publish("q1", payload))
-   * exec(amqp.publish("q1", payload).confirm)
-   */
+    .poolSize(10)
+    // .prepare(DeclareQueue("q1", autoDelete = false)) // TODO: implement this dsl
 
   val scn = scenario("RabbitMQ Publishing").repeat(1000) {
     exec(
       amqp("Publish")
-        .publish(request)
+        .publish("q1", payload = "{foo:1}")
     )
   }
 
-  setUp(scn.inject(rampUsers(10) over (2 seconds))).protocols(amqpProtocol)
-//    .assertions(global.responseTime.max.lessThan(20), global.successfulRequests.percent.is(100))
+  setUp(scn.inject(rampUsers(10) over (3 seconds))).protocols(amqpProtocol)
 }
 
 
